@@ -9,16 +9,14 @@ namespace AuthtBenchmark
 {
     internal static class Benchmark
     {
-        const int c_users = 2000000;
         const int c_views = 4;
 
         const int c_threads = 1;
-        const int c_usersPerThread = c_users / c_threads;
 
         static Random s_random = new Random(Environment.TickCount);
         static int s_nextUser = 0;
 
-        public static void TestAuthentication(IAuthtService authtService)
+        public static void TestAuthentication(IAuthtService authtService, int sessions)
         {
             Console.WriteLine($"Beginning Test: {authtService.GetType().Name}");
 
@@ -28,7 +26,7 @@ namespace AuthtBenchmark
             var tasks = new Task[c_threads];
             for (int i = 0; i < c_threads; i++)
             {
-                tasks[i] = Task.Run(() => TestThread(authtService));
+                tasks[i] = Task.Run(() => TestThread(authtService, sessions/c_threads));
             }
 
             // Wait for all to finish
@@ -36,14 +34,14 @@ namespace AuthtBenchmark
 
             stopwatch.Stop();
 
-            Console.WriteLine($"{stopwatch.Elapsed} for {c_users} sessions.");
+            Console.WriteLine($"{stopwatch.Elapsed} for {sessions} sessions.");
             Console.WriteLine($"{((double)GC.GetTotalMemory(true)) / 1000000.0:F2}MB memory required.");
             Console.WriteLine();
         }
 
-        static void TestThread(IAuthtService authtService)
+        static void TestThread(IAuthtService authtService, int sessions)
         {
-            for (int userIndex = 0; userIndex < c_usersPerThread; userIndex++)
+            for (int userIndex = 0; userIndex < sessions; userIndex++)
             {
                 string username = $"user{Interlocked.Increment(ref s_nextUser)}";
                 string password = $"pw{s_random.Next()}";
