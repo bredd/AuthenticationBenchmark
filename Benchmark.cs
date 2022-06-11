@@ -11,6 +11,13 @@ namespace AuthtBenchmark
     {
         const int c_views = 4;
 
+        // Testing with multiple threads failed on AuthtDbSession and AuthtCrypto session.
+        // For AuthtDbSession the Stream.Synchronized function isn't synchronizing correctly. So
+        // another method to synchronize database access is needed. The problem is the separate
+        // Seek and Read/Write calls. If a thread switch happens between seek and read then there's
+        // an error. 
+        // For AuthtCryptoSession the HMACSHA256 class doesn't seem to be thread save so each
+        // operation needs to create its own copy.
         const int c_threads = 1;
 
         static Random s_random = new Random(Environment.TickCount);
